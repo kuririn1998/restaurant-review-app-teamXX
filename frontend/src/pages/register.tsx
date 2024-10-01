@@ -1,50 +1,50 @@
+// pages/register.tsx
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 
-const Register = () => {
+const RegisterPage = () => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   const router = useRouter();
 
-  const handleRegister = async (e) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
 
-    const userData = {
-      username,
-      email,
-      password,
-    };
-
+    // フォームのデータを送信
     try {
-      const response = await fetch('http://localhost:3000/api/register', {
+      const res = await fetch('/api/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(userData),
+        body: JSON.stringify({
+          username,
+          email,
+          password,
+        }),
       });
 
-      if (response.ok) {
+      if (res.ok) {
+        // 登録成功時、例えばログインページにリダイレクト
         router.push('/login');
       } else {
-        const data = await response.json();
-        setError(data.message || 'Something went wrong');
+        const errorData = await res.json();
+        setErrorMessage(errorData.message || 'Registration failed');
       }
     } catch (error) {
-      setError('Failed to register. Please try again.');
+      setErrorMessage('An unexpected error occurred');
     }
   };
 
   return (
     <div>
-      <h1>Create an Account</h1>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      <h1>Create Account</h1>
+      {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
       <form onSubmit={handleRegister}>
         <div>
-          <label>Username:</label>
+          <label>Username</label>
           <input
             type="text"
             value={username}
@@ -53,7 +53,7 @@ const Register = () => {
           />
         </div>
         <div>
-          <label>Email:</label>
+          <label>Email</label>
           <input
             type="email"
             value={email}
@@ -62,7 +62,7 @@ const Register = () => {
           />
         </div>
         <div>
-          <label>Password:</label>
+          <label>Password</label>
           <input
             type="password"
             value={password}
@@ -76,4 +76,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default RegisterPage;

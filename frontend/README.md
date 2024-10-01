@@ -1,36 +1,97 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## next-v18-template 概要
 
-## Getting Started
+app router を使用しない next.js-v18 のテンプレートリポジトリ
+required: nodejs 20.9.0
 
-First, run the development server:
+## Usage
 
-```bash
-npm run dev
-# or
+環境変数の設定
+`cp .env.example .env` を実行し、Firebase のクレデンシャルを設定をする。
+
+ローカルサーバーの起動
+
+```zsh
+yarn install
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 構成など
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+機能を feature ごとにディレクトリ区切って実装していく。
+feature の中身は api, components が基本となる。
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+feature から横断的に使われるような機能は src 配下の components, hooks などに書く。
+`features/components`は Atomic Design で機能スコープで有効なコンポーネントを配置。
 
-## Learn More
+依存しているライブラリ(ex. axios, react-query, auth...)の設定、実装は libs 配下に記述する。
 
-To learn more about Next.js, take a look at the following resources:
+`src/components`は Atomic Design でグローバルに有効なコンポーネントを配置
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## API 連携
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+API との連携は OpenAPI スキーマで行なっています。
+スキーマファイルは buychat-ns-newshop-backend をローカルで立ち上げると生成されます。
+バックエンドのリポジトリでターミナルを 2 つ用意してそれぞれ `yarn debug`, `yarn start:dev` を実行し、フロントのリポジトリで `yarn gen:openapi-type` を実行するとスキーマから TypeScript の API クライアント・型が自動生成されます。
+aspida というツールによって実現されています。
 
-## Deploy on Vercel
+## S3
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+ファイルのアップロードには AWS S3, アップロードしたファイルの配信には CloudFront を使用しています。
+また Next.js の Route Handler を使用してフロントエンドからファイルをアップロードしています。
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+以下の手順でローカルから AWS の develop 環境に接続してください。
+
+1. AWS の SSO にログインし、 `dev+dev-newsystem` の Systems Manager に入る
+2. .env の環境変数に以下の値を入力する
+   a. AWS_ACCESS_KEY_ID: Systems Manager の `s3-user-access-key-id`
+   b. AWS_SECRET_ACCESS_KEY: Systems Manager の `s3-user-secret-access-key`
+
+### S3 の実装方針
+
+- `src/libs/s3.ts` に作成している共通の処理でファイルをアップロードする
+- ファイル名は `uuid` を使用して一意のファイル名にする
+- ショップ ID ごとにオブジェクトを分ける
+- 保存対象ごとにオブジェクトを分ける（商品・ユーザー・自動応答等）
+- アップロードして返ってきた key を DB に保存し、CloudFront から表示する
+- 更新時は更新前のファイルと拡張子が同じ限り、同じ key でアップロードして上書きをする
+
+商品画像をアップロードする例
+
+```
+const file: File = selectedImages[0]?.file
+if (file) {
+  const key = await uploadShopFile(file, `${shopId}/items`)
+}
+```
+
+アップロードした画像を CloudFront 経由で表示する例
+
+```
+<Image src=`${process.env.NEXT_PUBLIC_CLOUDFRONT_URL}/${key}` />
+```
+
+## Deploy
+
+Vercel で自動デプロイされます。
+デプロイ結果は Slack の buychat\_\_deploy_notif チャンネルに通知されます。
+develop ブランチにマージされるとリリース用の `Release YYYY-mm-dd` という Pull Request が自動で作成されます。
+
+feature/〇〇 ブランチから develop ブランチに Pull Request を作成 → PR ごとにプレビュー環境を自動デプロイ
+develop ブランチにマージ → develop 環境に自動デプロイ
+main ブランチにマージ → production 環境に自動デプロイ
+
+## Sentry
+
+Sentry でエラーの監視をしています。
+エラー時の処理を作成したときは `src/lib/sentry.ts` の `capture` を使用してエラーを送信してください。
+第 1 引数にはエラーオブジェクトを、第 2 引数ではエラーの検索をしやすくするために category を渡してください。
+
+```
+import { capture } from '@/libs/sentry'
+
+try {
+  …
+} catch (err) {
+  capture(err, 'SignUp')
+}
+```

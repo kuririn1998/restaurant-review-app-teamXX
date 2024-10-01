@@ -1,11 +1,3 @@
 {
-  "parser": "@typescript-eslint/parser",
-  "parserOptions": {
-    "project": "./tsconfig.json"
-  },
-  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
-  "ignorePatterns": ["dist/", "node_modules/"], // ここで除外
-  "rules": {
-    // プロジェクトに合わせたルール
-  }
+  "extends": "next/core-web-vitals"
 }

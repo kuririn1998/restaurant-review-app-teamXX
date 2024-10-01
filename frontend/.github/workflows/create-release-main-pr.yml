@@ -1,0 +1,31 @@
+name: Create a release pull request
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  create-release-test-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up Ruby 3.2.2
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.2.2
+          bundler-cache: true
+
+      - name: Create a release master pull request
+        env:
+          GIT_PR_RELEASE_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GIT_PR_RELEASE_BRANCH_PRODUCTION: master
+          GIT_PR_RELEASE_BRANCH_STAGING: develop
+          GIT_PR_RELEASE_LABELS: release
+          GIT_PR_RELEASE_TEMPLATE: .github/PULL_REQUEST_TEMPLATE/.git-pr-release-template
+        run: |
+          gem install -N git-pr-release -v "2.2.0"
+          git-pr-release --no-fetch
