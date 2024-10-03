@@ -49,7 +49,55 @@ root/
 - npm or yarn
 
 ## Project setup
+Monorepo構成
+このプロジェクトは、npmワークスペースを使用して管理されたMonorepo構成を採用しており、backendディレクトリにNestJSアプリケーション、frontendディレクトリにNext.jsアプリケーションがそれぞれ配置されています。
 
+依存関係のインストール
+最初に、backendとfrontend両方の依存関係をインストールします：
 ```bash
 $ npm install
+```
+
+このコマンドにより、npmワークスペースを使用して両方のディレクトリの依存関係が自動的にインストールされます。
+
+アプリケーションの実行
+package.jsonに定義されているスクリプトを使用して、backend（NestJS）とfrontend（Next.js）の両方を個別に、または同時に実行することができます。
+
+**バックエンド（NestJS）の実行**
+NestJSバックエンドを開発モードで実行するには：
+```bash
+$ npm run dev:backend
+```
+バックエンドを本番用にビルドするには：
+```bash
+$ npm run build:backend
+```
+本番環境でバックエンドを実行するには：
+```bash
+$ npm run start:backend
+```
+
+**フロントエンド（Next.js）の実行**
+Next.jsフロントエンドを開発モードで実行するには：
+```bash
+$ npm run dev:frontend
+```
+フロントエンドを本番用にビルドするには：
+```bash
+$ npm run build:frontend
+```
+本番環境でフロントエンドを実行するには：
+```bash
+$ npm run start:frontend
+```
+
+**バックエンドとフロントエンドの同時実行**
+バックエンドとフロントエンドを同時に開発モードで実行するには、2つのターミナルウィンドウを使用します：
+1つ目のターミナルでバックエンドを実行：
+```bash
+$ npm run dev:backend
+```
+2つ目のターミナルでフロントエンドを実行：
+```bash
+$ npm run dev:frontend
 ```
