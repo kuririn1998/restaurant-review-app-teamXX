@@ -1,13 +1,18 @@
-import type { AppProps } from 'next/app'
-import { ThemeProvider } from '@/contexts/ThemeContext'
-import '@/styles/globals.css'
+import type { AppProps } from 'next/app';
+import dynamic from 'next/dynamic';
+import '@/styles/globals.css';
+
+const ThemeProviderClient = dynamic(
+  () => import('@/contexts/ThemeContext').then(mod => mod.ThemeProvider),
+  { ssr: false }
+);
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
-    <ThemeProvider>
+    <ThemeProviderClient>
       <Component {...pageProps} />
-    </ThemeProvider>
-  )
+    </ThemeProviderClient>
+  );
 }
 
-export default MyApp
+export default MyApp;
