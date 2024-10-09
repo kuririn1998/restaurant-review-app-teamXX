@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Box,
   TextField,
@@ -9,26 +9,40 @@ import {
   Link,
   Paper,
 } from '@mui/material';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
 
 const SignUpForm: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [agreeTerms, setAgreeTerms] = useState(false);
-  const [agreePrivacy, setAgreePrivacy] = useState(false);
+  const validationSchema = Yup.object({
+    email: Yup.string().email('Invalid email address').required('Required'),
+    password: Yup.string().min(8, 'Password must be at least 8 characters').required('Required'),
+    confirmPassword: Yup.string()
+      .oneOf([Yup.ref('password')], 'Passwords must match')
+      .required('Required'),
+    agreeTerms: Yup.boolean().oneOf([true], 'You must agree to the Terms of Service'),
+    agreePrivacy: Yup.boolean().oneOf([true], 'You must acknowledge the Privacy Policy'),
+  });
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    // ここにサインアップのロジックを実装します
-    console.log('Sign up:', { email, password, agreeTerms, agreePrivacy });
-  };
+  const formik = useFormik({
+    initialValues: {
+      email: '',
+      password: '',
+      confirmPassword: '',
+      agreeTerms: false,
+      agreePrivacy: false,
+    },
+    validationSchema,
+    onSubmit: values => {
+      console.log('Sign up:', values);
+    },
+  });
 
   return (
     <Paper elevation={3} sx={{ p: 4, maxWidth: 400, mx: 'auto', mt: 8 }}>
       <Typography variant='h5' component='h1' gutterBottom>
         Create an account
       </Typography>
-      <Box component='form' onSubmit={handleSubmit} noValidate>
+      <Box component='form' onSubmit={formik.handleSubmit} noValidate>
         <TextField
           margin='normal'
           required
@@ -38,8 +52,11 @@ const SignUpForm: React.FC = () => {
           name='email'
           autoComplete='email'
           autoFocus
-          value={email}
-          onChange={e => setEmail(e.target.value)}
+          value={formik.values.email}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          error={formik.touched.email && Boolean(formik.errors.email)}
+          helperText={formik.touched.email && formik.errors.email}
         />
         <TextField
           margin='normal'
@@ -50,8 +67,11 @@ const SignUpForm: React.FC = () => {
           type='password'
           id='password'
           autoComplete='new-password'
-          value={password}
-          onChange={e => setPassword(e.target.value)}
+          value={formik.values.password}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          error={formik.touched.password && Boolean(formik.errors.password)}
+          helperText={formik.touched.password && formik.errors.password}
         />
         <TextField
           margin='normal'
@@ -61,22 +81,54 @@ const SignUpForm: React.FC = () => {
           label='Confirm password'
           type='password'
           id='confirmPassword'
-          value={confirmPassword}
-          onChange={e => setConfirmPassword(e.target.value)}
+          value={formik.values.confirmPassword}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          error={formik.touched.confirmPassword && Boolean(formik.errors.confirmPassword)}
+          helperText={formik.touched.confirmPassword && formik.errors.confirmPassword}
         />
         <FormControlLabel
-          control={<Checkbox value='agreeTerms' color='primary' />}
+          control={
+            <Checkbox
+              id='agreeTerms'
+              name='agreeTerms'
+              color='primary'
+              checked={formik.values.agreeTerms}
+              onChange={formik.handleChange}
+            />
+          }
           label='I agree to the Terms of Service'
-          onChange={e => setAgreeTerms((e.target as HTMLInputElement).checked)}
         />
+        {formik.touched.agreeTerms && formik.errors.agreeTerms ? (
+          <Typography color='error'>{formik.errors.agreeTerms}</Typography>
+        ) : null}
+
         <FormControlLabel
-          control={<Checkbox value='agreePrivacy' color='primary' />}
+          control={
+            <Checkbox
+              id='agreePrivacy'
+              name='agreePrivacy'
+              color='primary'
+              checked={formik.values.agreePrivacy}
+              onChange={formik.handleChange}
+            />
+          }
           label='I acknowledge that I have read and understand the Privacy Policy'
-          onChange={e => setAgreePrivacy((e.target as HTMLInputElement).checked)}
         />
-        <Button type='submit' fullWidth variant='contained' sx={{ mt: 3, mb: 2 }}>
+        {formik.touched.agreePrivacy && formik.errors.agreePrivacy ? (
+          <Typography color='error'>{formik.errors.agreePrivacy}</Typography>
+        ) : null}
+
+        <Button
+          type='submit'
+          fullWidth
+          variant='contained'
+          sx={{ mt: 3, mb: 2 }}
+          disabled={!formik.isValid || !formik.dirty}
+        >
           Create Account
         </Button>
+
         <Box sx={{ textAlign: 'center' }}>
           <Typography variant='body2'>
             Already have an account?{' '}
