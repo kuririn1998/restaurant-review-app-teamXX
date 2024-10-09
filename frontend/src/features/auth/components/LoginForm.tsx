@@ -12,11 +12,18 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 
 const LoginForm: React.FC = () => {
+  const [usernameOrEmail, setUsernameOrEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    // Handle login logic here
+    console.log('Login form submitted:', {
+      usernameOrEmail,
+      password,
+      rememberMe,
+    });
   };
 
   return (
@@ -24,13 +31,22 @@ const LoginForm: React.FC = () => {
       <Typography variant='h4' align='center' gutterBottom>
         Log in
       </Typography>
-      <TextField fullWidth margin='normal' label='Username or email' variant='outlined' />
+      <TextField
+        fullWidth
+        margin='normal'
+        label='Username or email'
+        variant='outlined'
+        value={usernameOrEmail}
+        onChange={e => setUsernameOrEmail(e.target.value)}
+      />
       <TextField
         fullWidth
         margin='normal'
         label='Password'
         type={showPassword ? 'text' : 'password'}
         variant='outlined'
+        value={password}
+        onChange={e => setPassword(e.target.value)}
         InputProps={{
           endAdornment: (
             <Button onClick={() => setShowPassword(!showPassword)}>
@@ -43,7 +59,14 @@ const LoginForm: React.FC = () => {
         Forgot your password?
       </Link>
       <FormControlLabel
-        control={<Checkbox value='remember' color='primary' />}
+        control={
+          <Checkbox
+            value='remember'
+            color='primary'
+            checked={rememberMe}
+            onChange={e => setRememberMe(e.target.checked)}
+          />
+        }
         label='Remember me'
       />
       <Button type='submit' fullWidth variant='contained' sx={{ mt: 3, mb: 2 }}>
