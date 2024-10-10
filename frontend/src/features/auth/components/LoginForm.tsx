@@ -111,7 +111,7 @@ const LoginForm: React.FC = () => {
         <Button variant='outlined'>Google</Button>
       </Box>
       <Typography variant='body2' align='center' sx={{ mt: 2 }}>
-        Don&apos;t have an account? <Link href='/signUp'>Sign up for free</Link>
+        Don&apos;t have an account? <Link href='/signup'>Sign up for free</Link>
       </Typography>
     </Box>
   );

@@ -14,17 +14,23 @@ import * as Yup from 'yup';
 
 const SignUpForm: React.FC = () => {
   const validationSchema = Yup.object({
-    email: Yup.string().email('Invalid email address').required('Required'),
-    password: Yup.string().min(8, 'Password must be at least 8 characters').required('Required'),
+    userName: Yup.string()
+      .min(3, 'Username must be at least 3 characters')
+      .required('Username is required'),
+    email: Yup.string().email('Invalid email address').required('Email is required'),
+    password: Yup.string()
+      .min(8, 'Password must be at least 8 characters')
+      .required('Password is required'),
     confirmPassword: Yup.string()
       .oneOf([Yup.ref('password')], 'Passwords must match')
-      .required('Required'),
+      .required('Password confirmation is required'),
     agreeTerms: Yup.boolean().oneOf([true], 'You must agree to the Terms of Service'),
     agreePrivacy: Yup.boolean().oneOf([true], 'You must acknowledge the Privacy Policy'),
   });
 
   const formik = useFormik({
     initialValues: {
+      userName: '',
       email: '',
       password: '',
       confirmPassword: '',
@@ -47,11 +53,25 @@ const SignUpForm: React.FC = () => {
           margin='normal'
           required
           fullWidth
+          id='userName'
+          label='Username'
+          name='userName'
+          autoComplete='username'
+          autoFocus
+          value={formik.values.userName}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          error={formik.touched.userName && Boolean(formik.errors.userName)}
+          helperText={formik.touched.userName && formik.errors.userName}
+        />
+        <TextField
+          margin='normal'
+          required
+          fullWidth
           id='email'
           label='Email'
           name='email'
           autoComplete='email'
-          autoFocus
           value={formik.values.email}
           onChange={formik.handleChange}
           onBlur={formik.handleBlur}
